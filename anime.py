@@ -31,44 +31,64 @@ def create_soup(x):
 # helper function for recommendation algorithms
 
 
-def get_recs(id, cosine_sim):
-    # get the index of the anime that matches the id
-    id2 = '\'' + str(id) + '\''
-    idx = (df.loc[df['Id'] == id2].index[0])
+def get_recs(id, cosine_sim, num):
+    text = "The following are recommendations for "
 
-    # find sim score of the inputed anime with all other animes
-    sim_scores = list(enumerate(cosine_sim[idx]))
+    # write to file
+    with open('anime.txt', "a+") as f:
 
-    # sort based on sim scores desc
-    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+        # get the index of the anime that matches the id
+        id2 = '\'' + str(id) + '\''
+        try:
+            idx = (df.loc[df['Id'] == id2].index[0])
+        except:
+            print("That id does not exist.")
+            exit(-1)
 
-    # get recommended animes index
-    anime_indices = [i[0] for i in sim_scores]
-    for i in range(len(sim_scores)):
-        if i > 10:
-            break
-        else:
-            print(df['Anime Title'].iloc[anime_indices[i]])
+        # find sim score of the inputed anime with all other animes
+        sim_scores = list(enumerate(cosine_sim[idx]))
 
-    # return df['Anime Title'].iloc[anime_indices]
+        # sort based on sim scores desc
+        sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+
+        # get recommended animes index
+        anime_indices = [i[0] for i in sim_scores]
+        if num > 100:
+            print('Number of recommendations cannot exceed 100.')
+            num = 100
+        for i in range(len(sim_scores)):
+            if i > num:
+                break
+            else:
+                link = "https://myanimelist.net/anime/"
+                temp_id = df.loc[sim_scores[i][0]]["Id"]
+                temp_id = temp_id.replace('\'', '')
+                link += str(temp_id)
+
+                if i == 0:
+                    text += str(df['Anime Title'].iloc[anime_indices[i]])
+                    print("%s %s" %
+                          (df['Anime Title'].iloc[anime_indices[i]], link))
+                    f.write("%s\n%s %s %s\n" % (
+                        text, df['Anime Title'].iloc[anime_indices[i]], link, sim_scores[i][1].round(4)))
+                else:
+                    print("%s %s" %
+                          (df['Anime Title'].iloc[anime_indices[i]], link))
+                    f.write("%s %s %s\n" % (
+                        df['Anime Title'].iloc[anime_indices[i]], link, sim_scores[i][1].round(4)))
+
+        # return df['Anime Title'].iloc[anime_indices]
 
 
 if __name__ == "__main__":
     # reading in arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--number_of_anime', type=int, default=1)
+    parser.add_argument('--number_of_recs', type=int, default=10)
     parser.add_argument('--anime_id', type=int)
+    parser.add_argument('--own_list')
     args = parser.parse_args()
 
-    if args.number_of_anime > 1 or args.anime_id:
-        if args.number_of_anime > 1:
-            user_animes = []
-            prompt = int(input("Enter the anime ids: "))
-
-            for i in range(1, args.number_of_anime):
-                ele = int(input())
-                user_animes.append(ele)
-
+    if (args.anime_id or args.own_list):
         # read csv file into dataframe
         df = pd.read_csv('top_and_bottom_anime.csv')
         # print(df.shape)
@@ -91,8 +111,17 @@ if __name__ == "__main__":
         cosine_sim2 = cosine_similarity(count_matrix, count_matrix)
         df = df.reset_index()
 
-        for i in user_animes:
-            get_recs(i, cosine_sim2)
+        ids = []
+        if args.own_list:
+            with open(args.own_list, 'r') as f:
+                for line in f:
+                    temp_line = line.split()
+                    for i in temp_line:
+                        ids.append(i)
+            for i in ids:
+                get_recs(i, cosine_sim2, args.number_of_recs)
+        else:
+            get_recs(args.anime_id, cosine_sim2, args.number_of_recs)
     else:
         raise Exception(
-            "python .\\anime.py --number_of_anime \'or\' --anime_id \'id number\'")
+            "python ./anime.py --number_of_recs <number> --anime_id <id number> --own_list <file name>")
