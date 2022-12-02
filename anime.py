@@ -31,11 +31,11 @@ def create_soup(x):
 # helper function for recommendation algorithms
 
 
-def get_recs(id, cosine_sim, num):
+def get_recs(id, cosine_sim, num, out_list):
     text = "The following are recommendations for "
 
     # write to file
-    with open('anime.txt', "a+") as f:
+    with open(out_list, "a+") as f:
 
         # get the index of the anime that matches the id
         id2 = '\'' + str(id) + '\''
@@ -85,10 +85,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--number_of_recs', type=int, default=10)
     parser.add_argument('--anime_id', type=int)
-    parser.add_argument('--own_list')
+    parser.add_argument('--in_list')
+    parser.add_argument('--out_list', default="anime.txt")
     args = parser.parse_args()
 
-    if (args.anime_id or args.own_list):
+    if (args.anime_id or args.in_list):
         # read csv file into dataframe
         df = pd.read_csv('top_and_bottom_anime.csv')
         # print(df.shape)
@@ -112,16 +113,16 @@ if __name__ == "__main__":
         df = df.reset_index()
 
         ids = []
-        if args.own_list:
-            with open(args.own_list, 'r') as f:
+        if args.in_list:
+            with open(args.in_list, 'r') as f:
                 for line in f:
                     temp_line = line.split()
                     for i in temp_line:
                         ids.append(i)
             for i in ids:
-                get_recs(i, cosine_sim2, args.number_of_recs)
+                get_recs(i, cosine_sim2, args.number_of_recs, args.out_list)
         else:
             get_recs(args.anime_id, cosine_sim2, args.number_of_recs)
     else:
         raise Exception(
-            "python ./anime.py --number_of_recs <number> --anime_id <id number> --own_list <file name>")
+            "python ./anime.py --number_of_recs <number> --anime_id <id number> --in_list <input file name> --out_list <output file name>")
