@@ -32,7 +32,7 @@ def create_soup(x):
 
 
 def get_recs(id, cosine_sim, num, out_list):
-    text = "The following are recommendations for "
+    text = "The following are recommendations for: "
 
     # write to file
     with open(out_list, "a+") as f:
@@ -67,14 +67,15 @@ def get_recs(id, cosine_sim, num, out_list):
 
                 if i == 0:
                     text += str(df['Anime Title'].iloc[anime_indices[i]])
-                    print("%s %s" %
-                          (df['Anime Title'].iloc[anime_indices[i]], link))
-                    f.write("%s\n%s %s %s\n" % (
+                    #print("%s %s" %
+                    #      (df['Anime Title'].iloc[anime_indices[i]], link))
+                    f.write("%s\nTitle: %s\n\tLink: %s\n\tScore: %s\n\n" % (
                         text, df['Anime Title'].iloc[anime_indices[i]], link, sim_scores[i][1].round(4)))
+                    f.write("Note: The higher the score the more recommended the anime.\n\n")
                 else:
-                    print("%s %s" %
-                          (df['Anime Title'].iloc[anime_indices[i]], link))
-                    f.write("%s %s %s\n" % (
+                    #print("%s %s" %
+                    #      (df['Anime Title'].iloc[anime_indices[i]], link))
+                    f.write("Anime Title: %s\n\tLink: %s\n\tScore: %s\n" % (
                         df['Anime Title'].iloc[anime_indices[i]], link, sim_scores[i][1].round(4)))
 
         # return df['Anime Title'].iloc[anime_indices]
@@ -122,7 +123,7 @@ if __name__ == "__main__":
             for i in ids:
                 get_recs(i, cosine_sim2, args.number_of_recs, args.out_list)
         else:
-            get_recs(args.anime_id, cosine_sim2, args.number_of_recs)
+            get_recs(args.anime_id, cosine_sim2, args.number_of_recs, args.out_list)
     else:
         raise Exception(
             "python ./anime.py --number_of_recs <number> --anime_id <id number> --in_list <input file name> --out_list <output file name>")
