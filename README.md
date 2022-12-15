@@ -33,7 +33,7 @@ our scraped from MAL dataset and give recommendations based on cosine similarity
 - [x] Add Changelog
 - [x] Better Readme
 - [] Names for input instead of id only
-- [] Better output file formatting
+- [x] Better output file formatting
 - [] scraper that updates for most recent shows
 
 # Contributing
